@@ -119,6 +119,9 @@ dist
 # TernJS port file
 .tern-port
 
+# JetBrains IDEs folder for project-specific settings
+.idea
+
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
