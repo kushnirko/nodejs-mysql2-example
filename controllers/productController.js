@@ -6,10 +6,16 @@ const getAllProducts = async (req, res) => {
   try {
     const products = await Product.getAll();
     res.status(200).json({ products });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: 'Whoops... Something went wrong(' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ errorMessage: err.message });
   }
+  // Product.getAll()
+  //   .then((products) => res.status(200).json({ products }))
+  //   .catch((err) => {
+  //     console.error(err);
+  //     res.status(400).json({ errorMessage: err.message });
+  //   });
 };
 
 const getProductById = async (req, res) => {
@@ -17,20 +23,20 @@ const getProductById = async (req, res) => {
     const productId = req.params.id;
     const product = await Product.getById(productId);
     res.status(200).json({ product });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: 'Whoops... Something went wrong(' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ errorMessage: err.message });
   }
 };
 
 const createProduct = async (req, res) => {
   try {
-    const { name, producer } = req.body;
-    const createdProduct = await Product.create({ name, producer });
-    res.status(200).json({ newProduct: createdProduct });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: 'Whoops... Something went wrong(' });
+    const productData = req.body;
+    const createdProduct = await Product.create(productData);
+    res.status(200).json({ createdProduct });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ errorMessage: err.message });
   }
 };
 
@@ -40,9 +46,9 @@ const updateProduct = async (req, res) => {
     const newProductData = req.body;
     const updatedProduct = await Product.updateById(productId, newProductData);
     res.status(200).json({ updatedProduct });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: 'Whoops... Something went wrong(' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ errorMessage: err.message });
   }
 };
 
@@ -51,9 +57,9 @@ const deleteProduct = async (req, res) => {
     const productId = req.params.id;
     const deletedProduct = await Product.deleteById(productId);
     res.status(200).json({ deletedProduct });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: 'Whoops... Something went wrong(' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ errorMessage: err.message });
   }
 };
 
