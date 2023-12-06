@@ -9,6 +9,9 @@ class Product {
     FROM product;
     `;
     const connection = db.connectionFactory();
+    connection.connect(() => {
+      console.log('connected as id ' + connection.threadId);
+    });
     const products = await new Promise((resolve, reject) => {
       connection.query(sql, (err, res, fields) => {
         connection.end();
@@ -20,6 +23,17 @@ class Product {
         }
       });
     });
+    // const connection1 = db.connectionFactory();
+    // const f = (result, fields) =>
+    //   console.log(`Hello from callback!\n${{ result, fields }}`);
+    // connection1.query(sql, (err, res, fields) => {
+    //   connection1.end();
+    //   if (err) {
+    //     throw err;
+    //   } else {
+    //     f(res, fields);
+    //   }
+    // });
     for await (const product of products) {
       const producer = await this.getProducerById(product.id);
       product.producer = producer.name;
@@ -36,7 +50,7 @@ class Product {
     let connection;
     try {
       connection = await db.promiseConnectionFactory();
-      const [res] = await connection.query(sql);
+      const [[res]] = await connection.query(sql);
       // console.dir(
       //   {
       //     query: await connection.query(sql),
@@ -46,14 +60,19 @@ class Product {
       //     depth: null,
       //   },
       // );
-      const product = res[0];
+      const product = res;
       const producer = await this.getProducerById(id);
       product.producer = producer.name;
       return product;
     } catch (err) {
       throw err;
     } finally {
-      await connection.end();
+      if (connection) {
+        await connection.end();
+        // connection.end().then(() => {
+        //   console.log({ connection });
+        // });
+      }
     }
   }
 
@@ -66,9 +85,14 @@ class Product {
     WHERE product.id = ${id};
     `;
     return new Promise((resolve, reject) => {
-      db.pool.execute(sql, (err, res) => {
-        if (err) reject(err);
-        else resolve(res[0]);
+      db.pool.execute(sql, (err, [res]) => {
+        if (err) {
+          reject(err);
+        } else if (!res) {
+          reject(new Error('Could not get producer with this id'));
+        } else {
+          resolve(res);
+        }
       });
     });
   }
@@ -84,7 +108,7 @@ class Product {
       '${producer}'
     )
     `;
-    const creationReport = (await db.promisePool.execute(slq))[0];
+    const [creationReport] = await db.promisePool.execute(slq);
     const newProductId = creationReport.insertId;
     return this.getById(newProductId);
   }
@@ -97,20 +121,20 @@ class Product {
       producer = '${producer}'
     WHERE id = ${id};
     `;
-    let connection;
+    let promiseConnection;
     try {
       const connection = db.connectionFactory();
-      const a = connection.execute(sql);
-      // const [rows, fields] = await connection.execute(sql);
-      console.log({ a });
+      promiseConnection = connection.promise();
+      await promiseConnection.beginTransaction();
+      await promiseConnection.execute(sql);
+      await promiseConnection.commit();
+      return this.getById(id);
     } catch (err) {
+      await promiseConnection.rollback();
       throw err;
     } finally {
-      if (connection) {
-        connection.end();
-      }
+      if (promiseConnection) await promiseConnection.end();
     }
-    return this.getById(id);
   }
 
   static async deleteById(id) {

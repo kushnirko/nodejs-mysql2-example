@@ -8,13 +8,13 @@ const getAllProducts = async (req, res) => {
     res.status(200).json({ products });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ errorMessage: err.message });
+    res.status(404).json({ errorMessage: err.message });
   }
   // Product.getAll()
   //   .then((products) => res.status(200).json({ products }))
   //   .catch((err) => {
   //     console.error(err);
-  //     res.status(400).json({ errorMessage: err.message });
+  //     res.status(404).json({ errorMessage: err.message });
   //   });
 };
 
@@ -25,7 +25,7 @@ const getProductById = async (req, res) => {
     res.status(200).json({ product });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ errorMessage: err.message });
+    res.status(404).json({ errorMessage: err.message });
   }
 };
 
@@ -33,7 +33,7 @@ const createProduct = async (req, res) => {
   try {
     const productData = req.body;
     const createdProduct = await Product.create(productData);
-    res.status(200).json({ createdProduct });
+    res.status(201).json({ createdProduct });
   } catch (err) {
     console.error(err);
     res.status(400).json({ errorMessage: err.message });
@@ -59,7 +59,7 @@ const deleteProduct = async (req, res) => {
     res.status(200).json({ deletedProduct });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ errorMessage: err.message });
+    res.status(404).json({ errorMessage: err.message });
   }
 };
 
